@@ -1,0 +1,122 @@
+<html ng-app="osapp">
+
+<head>
+    <title>
+        Grants Ontario Symposium SpeedNetworking
+    </title>
+    <link rel="stylesheet" href="public/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,800&display=swap">
+    <link rel="stylesheet" href="stylesheet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="public/angular.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+        angular.module('osapp', []).controller('appController', ['$scope', '$http', function ($scope, $http) {
+
+            $scope.upload = function () {
+                var payload = new FormData();
+                payload.append('file', document.getElementById('filename').files[0]);
+                payload.append('expire', 48000);
+                payload.append('desc', document.getElementById('desc').value);
+                $http.post('/upload', payload, {
+                    transformRequest: angular.identity,
+                    headers: { 'Content-Type': undefined }
+                }).success(function (data) {
+                    document.getElementById('filename').value = '';
+                    document.getElementById('desc').value = '';
+                }).error(function (err) {
+                    $scope.result = err;
+                    $scope.resultClass = 'alert alert-danger';
+                    document.getElementById('filename').value = '';
+                    document.getElementById('desc').value = '';
+                });
+            };
+
+            var socket = io.connect();
+            socket.on('message', function (message) {
+                // if (Object.keys(message).length == 0)
+                //     document.getElementById('img').innerHTML = "<span style = 'text-align: center'><br><h3>To Do:</h3><br><br><p style = 'text-align: center'>Upload an image.</p><br><p style = 'text-align: center'>Select a hashtag to send with your image</p><br><p style = 'text-align: center'>Share your picture</p><br><br></span>";
+                // else {
+                // if(Object.keys(message).length != 0){
+                //     document.getElementById('img').innerHTML = "";
+                //     for (var i = 0; i < Object.keys(message).length; i++) {
+                //         var key = Object.keys(message)[i];
+                //         var desc = message[key].value;
+                //         var time = Math.ceil((message[key].expire - Date.now()) / 1000);
+                //         // ' + time + ' for time counter
+                //         document.getElementById('img').innerHTML += '<div class="col-md-4 img-thumbnail"><h2 class="text-center"></h2><img src="uploads/' + key + '" width="100%"/><h5 class="text-center">' + desc + '</h5></div>';
+                //     }
+                // }
+            });
+        }]);
+    </script>
+</head>
+
+<body data-ng-controller="appController" class="container-fluid" style="background-color: gold">
+    <div class="col-lg- col-md- col-sm-" style="height: 100%; padding: 0px;">
+        <header>
+            <h1>TPON Photos</h1>
+        </header>
+        <p class="{{resultClass}}">{{result}}</p>
+        <div class="photoContainer" style="overflow: scroll">
+            <div style="border-style: none; padding: 0px; background-color: white; height: 82%" class="col-md-12">
+                <select id="desc" style="width: 100%; font-size: 28px; height: 3%"
+                    onchange="imageSearch(document.getElementById('desc').value)">
+                    <option selected disabled>Choose one of the following hashtags!</option>
+                    <option value="#speednetworking">#speednetworking</option>
+                    <option value="#wallofbigideas">#wallofbigideas</option>
+                    <option value="#photobooth">#photobooth</option>
+                    <option value="#spinthewheeltrivia">#spinthewheeltrivia</option>
+                    <option value="#GOSpastpresentfuture">#GOSpastpresentfuture</option>
+                    <option value="#fansofGOS">#fansofGOS</option>
+                </select>
+                <input class="btn btn-dark" type="submit" value="Search" style="display: inline;">
+
+                <div style="border-style: none; padding: 0px; background-color: white; height: 82%;" id="img"
+                    class="col-md-12">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+
+<script>
+    function photoStatus() {
+        var temp = document.getElementById('filename').value;
+        document.getElementById('photostatus').innerHTML = temp;
+    }
+
+    function imageSearch(searchCriteria) {
+        document.getElementById('img').innerHTML = "";
+        console.log("HIHIHI")
+        var socket = io.connect();
+        socket.on('message', function (message) {
+            // if(Object.keys(message).length != 0){
+            // document.getElementById('img').innerHTML = "";
+        console.log(Object.keys(message).length)
+        for (var i = 0; i < Object.keys(message).length; i++) {
+            var key = Object.keys(message)[i];
+            var desc = message[key].value;
+            if (searchCriteria == desc) {
+                document.getElementById('img').innerHTML += '<div class="col-md-4 img-thumbnail"><h2 class="text-center"></h2><img src="uploads/' + key + '" width="100%"/><h5 class="text-center">' + desc + '</h5></div>';
+            }
+                // var time = Math.ceil((message[key].expire - Date.now()) / 1000);
+                // ' + time + ' for time counter
+        }
+            // }
+        });
+        // break;
+    }
+
+    // var searchText = document.getElementById("searchtext");
+    // searchText.addEventListener("keyup", function(event) {
+    //     if (event.keyCode === 13) {
+    //         event.preventDefault();
+    //         document.getElementById("myBtn").click();
+    //     }
+    // });
+</script>
+
+</html>
